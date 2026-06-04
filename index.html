@@ -5,74 +5,123 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Proforma — Tutu Automotores</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@500;700;800&display=swap');
-:root{--rojo:#c0392b;--rojo-dark:#96281b;--gris:#2c3e50;--borde:#dde1e7;--texto:#1a1a2e;}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:var(--texto);min-height:100vh;}
-.app-header{background:var(--gris);color:#fff;padding:16px 24px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 12px rgba(0,0,0,.3);position:sticky;top:0;z-index:100;}
-.logo-area{flex:1;}
+body{font-family:'Barlow',sans-serif;background:#f0f2f5;color:#1a1a2e;min-height:100vh;}
+
+/* HEADER APP */
+.app-header{background:#2c3e50;color:#fff;padding:16px 24px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 12px rgba(0,0,0,.3);position:sticky;top:0;z-index:100;}
 .brand{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;letter-spacing:1px;}
 .brand span{color:#e74c3c;}
-.subtitle{font-size:11px;opacity:.6;letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
-.btn-generar{background:var(--rojo);color:#fff;border:none;padding:10px 24px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s,transform .1s;}
-.btn-generar:hover{background:var(--rojo-dark);transform:translateY(-1px);}
+.sub{font-size:11px;opacity:.6;letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+.btn-pdf{background:#c0392b;color:#fff;border:none;padding:10px 24px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:.2s;margin-left:auto;}
+.btn-pdf:hover{background:#96281b;}
+.btn-pdf:disabled{background:#999;cursor:not-allowed;}
+
+/* FORM */
 .container{max-width:860px;margin:28px auto;padding:0 16px 60px;}
 .card{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);margin-bottom:20px;overflow:hidden;}
-.card-header{background:var(--gris);color:#fff;padding:12px 20px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:10px;}
-.dot{width:8px;height:8px;background:#e74c3c;border-radius:50%;flex-shrink:0;}
-.card-body{padding:20px;}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.form-grid.three{grid-template-columns:1fr 1fr 1fr;}
-@media(max-width:600px){.form-grid,.form-grid.three{grid-template-columns:1fr;}}
-.field{display:flex;flex-direction:column;gap:5px;}
-.field.span2{grid-column:span 2;}
-@media(max-width:600px){.field.span2{grid-column:span 1;}}
+.ch{background:#2c3e50;color:#fff;padding:12px 20px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:10px;}
+.dot{width:8px;height:8px;background:#e74c3c;border-radius:50%;}
+.cb{padding:20px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:600px){.g2,.g3{grid-template-columns:1fr;}}
+.f{display:flex;flex-direction:column;gap:5px;}
+.f.s2{grid-column:span 2;}
+@media(max-width:600px){.f.s2{grid-column:span 1;}}
 label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#7f8c8d;}
-label .req{color:#e74c3c;margin-left:2px;}
-input,select,textarea{border:1.5px solid var(--borde);border-radius:6px;padding:9px 12px;font-family:'Barlow',sans-serif;font-size:14px;color:var(--texto);transition:border-color .2s,box-shadow .2s;background:#fff;width:100%;}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--rojo);box-shadow:0 0 0 3px rgba(192,57,43,.1);}
+.req{color:#e74c3c;}
+input,select,textarea{border:1.5px solid #dde1e7;border-radius:6px;padding:9px 12px;font-family:'Barlow',sans-serif;font-size:14px;color:#1a1a2e;background:#fff;width:100%;transition:.2s;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#c0392b;box-shadow:0 0 0 3px rgba(192,57,43,.1);}
 textarea{resize:vertical;min-height:70px;}
 select{appearance:none;cursor:pointer;}
-.tipo-toggle{display:flex;border:1.5px solid var(--borde);border-radius:6px;overflow:hidden;}
-.tipo-toggle label{flex:1;text-align:center;padding:9px 6px;cursor:pointer;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--texto);transition:background .15s,color .15s;border-right:1.5px solid var(--borde);}
-.tipo-toggle label:last-child{border-right:none;}
-.tipo-toggle input[type="radio"]{display:none;}
-.tipo-toggle input[type="radio"]:checked + label{background:var(--rojo);color:#fff;}
+.toggle{display:flex;border:1.5px solid #dde1e7;border-radius:6px;overflow:hidden;}
+.toggle input[type=radio]{display:none;}
+.toggle label{flex:1;text-align:center;padding:9px 6px;cursor:pointer;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:#1a1a2e;transition:.15s;border-right:1.5px solid #dde1e7;}
+.toggle label:last-child{border-right:none;}
+.toggle input[type=radio]:checked+label{background:#c0392b;color:#fff;}
+
 /* FOTOS */
 .foto-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
 @media(max-width:500px){.foto-grid{grid-template-columns:repeat(2,1fr);}}
-.foto-slot{aspect-ratio:16/10;border:2px dashed var(--borde);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:border-color .2s,background .2s;position:relative;overflow:hidden;background:#fafafa;}
-.foto-slot:hover{border-color:var(--rojo);background:#fef9f9;}
-.foto-slot .ph{pointer-events:none;text-align:center;padding:8px;}
-.foto-slot .ph svg{opacity:.3;margin-bottom:6px;display:block;margin-left:auto;margin-right:auto;}
-.foto-slot .ph p{font-size:10px;color:#999;font-weight:500;line-height:1.3;}
-.foto-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:6px;}
-.foto-slot .flabel{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:9px;font-weight:600;text-align:center;padding:3px;letter-spacing:.3px;}
-.foto-slot .rbtn{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:13px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:10;line-height:1;}
-.foto-slot:hover .rbtn{display:flex;}
-.file-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:none !important;padding:0 !important;z-index:5;}
+.fslot{aspect-ratio:16/10;border:2px dashed #dde1e7;border-radius:8px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:#fafafa;cursor:pointer;transition:.2s;}
+.fslot:hover{border-color:#c0392b;background:#fef9f9;}
+.fslot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:3;}
+.fph{text-align:center;padding:8px;pointer-events:none;}
+.fph svg{opacity:.3;display:block;margin:0 auto 6px;}
+.fph p{font-size:10px;color:#999;font-weight:500;line-height:1.3;}
+.fslot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.fslot .flbl{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:9px;text-align:center;padding:3px;font-weight:600;}
+.fslot .xbtn{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:12px;z-index:10;}
+.fslot:hover .xbtn{display:flex;}
+
 /* TOTALES */
-.totales-box{background:#f8f9fa;border:1.5px solid var(--borde);border-radius:8px;padding:16px 20px;}
-.trow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--borde);font-size:14px;}
-.trow:last-child{border-bottom:none;}
-.trow .lbl{color:#7f8c8d;font-weight:500;}
-.trow .val{font-weight:600;color:var(--texto);}
-.trow.total .lbl{font-size:16px;font-weight:700;color:var(--texto);}
-.trow.total .val{font-size:18px;font-weight:800;color:var(--rojo);}
-#toast{position:fixed;bottom:24px;right:24px;background:var(--gris);color:#fff;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.25);opacity:0;transform:translateY(10px);transition:opacity .3s,transform .3s;z-index:9999;pointer-events:none;}
+.tbox{background:#f8f9fa;border:1.5px solid #dde1e7;border-radius:8px;padding:16px 20px;}
+.tr{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #dde1e7;font-size:14px;}
+.tr:last-child{border-bottom:none;}
+.tr .l{color:#7f8c8d;font-weight:500;}
+.tr .r{font-weight:600;}
+.tr.big .l{font-size:16px;font-weight:700;color:#1a1a2e;}
+.tr.big .r{font-size:18px;font-weight:800;color:#c0392b;}
+
+/* PREVIEW PROFORMA (oculto, se renderiza para PDF) */
+#preview{position:fixed;left:-9999px;top:0;width:794px;background:#fff;font-family:Arial,sans-serif;font-size:12px;color:#1a1a2e;}
+.pv-header{background:#c0392b;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:flex-start;}
+.pv-header .hl{font-size:20px;font-weight:700;}
+.pv-header .hs{font-size:10px;opacity:.75;margin-top:3px;}
+.pv-header .hr{text-align:right;}
+.pv-header .hn{font-size:22px;font-weight:700;}
+.pv-sep{height:4px;background:#2c3e50;}
+.pv-body{padding:16px 20px;}
+.pv-sec{margin-bottom:14px;}
+.pv-sec-title{background:#2c3e50;color:#fff;font-size:10px;font-weight:700;letter-spacing:2px;padding:5px 10px;margin-bottom:8px;}
+.pv-row{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;}
+.pv-field{flex:1;min-width:120px;}
+.pv-field.w2{flex:2;}
+.pv-field.w3{flex:3;}
+.pv-label{font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.pv-val{font-size:11px;font-weight:700;color:#1a1a2e;border-bottom:1px solid #eee;padding-bottom:2px;}
+.pv-auto-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee;}
+.pv-auto-name{font-size:13px;font-weight:700;color:#c0392b;}
+.pv-auto-price{font-size:16px;font-weight:800;}
+.pv-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px;}
+.pv-prices{margin-left:auto;width:260px;}
+.pv-pr{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;font-size:11px;}
+.pv-pr .pl{color:#888;}
+.pv-pr .pv{font-weight:700;}
+.pv-pr.ptotal{padding:8px 0;border-bottom:none;}
+.pv-pr.ptotal .pl{font-size:14px;font-weight:700;color:#1a1a2e;}
+.pv-pr.ptotal .pv{font-size:16px;font-weight:800;color:#c0392b;}
+.pv-letras{font-size:10px;color:#555;margin:8px 0;padding:6px;background:#f9f9f9;border-left:3px solid #c0392b;}
+.pv-avisos{margin-top:14px;padding-top:10px;border-top:1px solid #ddd;}
+.pv-aviso{font-size:9px;color:#888;margin-bottom:3px;}
+.pv-firma{text-align:right;margin-top:16px;padding-top:8px;border-top:1px solid #1a1a2e;display:inline-block;float:right;}
+.pv-firma-name{font-size:11px;font-weight:700;}
+.pv-firma-cuit{font-size:9px;color:#888;}
+.pv-dni-header{background:#c0392b;color:#fff;padding:12px 20px;display:flex;justify-content:space-between;}
+.pv-dni-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 20px;}
+.pv-dni-slot{border:1px solid #ddd;border-radius:4px;overflow:hidden;}
+.pv-dni-slot img{width:100%;height:120px;object-fit:cover;display:block;}
+.pv-dni-slot .pv-dni-lbl{background:#2c3e50;color:#fff;font-size:9px;text-align:center;padding:3px;font-weight:700;}
+.pv-tit{background:#f0f0f0;padding:4px 8px;font-size:9px;font-weight:700;color:#c0392b;text-transform:uppercase;letter-spacing:1px;margin-top:8px;}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:#2c3e50;color:#fff;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.25);opacity:0;transform:translateY(10px);transition:.3s;z-index:9999;pointer-events:none;max-width:320px;}
 #toast.show{opacity:1;transform:translateY(0);}
-#toast.err{background:var(--rojo);}
+#toast.err{background:#c0392b;}
 </style>
 </head>
 <body>
 
 <header class="app-header">
-  <div class="logo-area">
+  <div>
     <div class="brand">TUTU <span>AUTOMOTORES</span></div>
-    <div class="subtitle">Generador de Proforma</div>
+    <div class="sub">Generador de Proforma</div>
   </div>
-  <button class="btn-generar" onclick="generarPDF()">
+  <button class="btn-pdf" id="btnPDF" onclick="generarPDF()">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
     GENERAR PDF
   </button>
@@ -81,295 +130,212 @@ select{appearance:none;cursor:pointer;}
 <div class="container">
 
   <div class="card">
-    <div class="card-header"><div class="dot"></div>TIPO DE OPERACION</div>
-    <div class="card-body">
-      <div class="form-grid three">
-        <div class="field">
+    <div class="ch"><div class="dot"></div>TIPO DE OPERACION</div>
+    <div class="cb">
+      <div class="g3">
+        <div class="f">
           <label>Tipo de IVA <span class="req">*</span></label>
-          <div class="tipo-toggle">
-            <input type="radio" name="tipoIVA" id="iva21" value="21" checked onchange="recalcular()">
-            <label for="iva21">IVA 21%</label>
-            <input type="radio" name="tipoIVA" id="iva105" value="10.5" onchange="recalcular()">
-            <label for="iva105">IVA 10.5%</label>
+          <div class="toggle">
+            <input type="radio" name="iva" id="i21" value="21" checked onchange="recalc()">
+            <label for="i21">IVA 21%</label>
+            <input type="radio" name="iva" id="i105" value="10.5" onchange="recalc()">
+            <label for="i105">IVA 10.5%</label>
           </div>
         </div>
-        <div class="field">
-          <label>N° Proforma <span class="req">*</span></label>
-          <input type="number" id="nroProforma" placeholder="Ej: 45993">
-        </div>
-        <div class="field">
-          <label>Fecha <span class="req">*</span></label>
-          <input type="date" id="fechaDoc">
+        <div class="f"><label>N° Proforma <span class="req">*</span></label><input type="number" id="nro" placeholder="45993"></div>
+        <div class="f"><label>Fecha <span class="req">*</span></label><input type="date" id="fecha"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="dot"></div>EMPRESA EMISORA</div>
+    <div class="cb">
+      <div class="g2">
+        <div class="f"><label>Razon Social <span class="req">*</span></label><input type="text" id="empresa" value="TUTU AUTOMOTORES SAS"></div>
+        <div class="f"><label>CUIT Empresa</label><input type="text" id="cuitEmp" value="30-71660684-4"></div>
+        <div class="f"><label>Condicion IVA</label><input type="text" id="condiva" value="RESPONSABLE INSCRIPTO"></div>
+        <div class="f"><label>Tipo Factura</label>
+          <select id="tipoFact"><option>B</option><option>A</option><option>C</option></select>
         </div>
       </div>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-header"><div class="dot"></div>EMPRESA EMISORA</div>
-    <div class="card-body">
-      <div class="form-grid">
-        <div class="field">
-          <label>Razon Social <span class="req">*</span></label>
-          <input type="text" id="empresa" value="TUTU AUTOMOTORES SAS">
+    <div class="ch"><div class="dot"></div>DATOS DEL CLIENTE</div>
+    <div class="cb">
+      <div class="g2">
+        <div class="f s2"><label>Nombre / Razon Social <span class="req">*</span></label><input type="text" id="cliente" placeholder="Apellido y nombre"></div>
+        <div class="f"><label>CUIT / DNI</label><input type="text" id="cuitCli" placeholder="20-XXXXXXXX-X"></div>
+        <div class="f"><label>Estado Civil</label>
+          <select id="ecivil"><option>SOLTERO/A</option><option>CASADO/A</option><option>DIVORCIADO/A</option><option>VIUDO/A</option></select>
         </div>
-        <div class="field">
-          <label>CUIT Empresa <span class="req">*</span></label>
-          <input type="text" id="cuitEmpresa" value="30-71660684-4">
-        </div>
-        <div class="field">
-          <label>Condicion IVA</label>
-          <input type="text" id="condIVA" value="RESPONSABLE INSCRIPTO">
-        </div>
-        <div class="field">
-          <label>Tipo Factura</label>
-          <select id="tipoFactura">
-            <option value="B">B</option>
-            <option value="A">A</option>
-            <option value="C">C</option>
-          </select>
+        <div class="f s2"><label>Direccion</label><input type="text" id="dir" placeholder="Calle, numero, ciudad"></div>
+        <div class="f"><label>Telefono</label><input type="tel" id="tel" placeholder="3541000000"></div>
+        <div class="f"><label>Facturacion</label>
+          <select id="fact"><option>B</option><option>A</option><option>C</option></select>
         </div>
       </div>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-header"><div class="dot"></div>DATOS DEL CLIENTE</div>
-    <div class="card-body">
-      <div class="form-grid">
-        <div class="field span2">
-          <label>Nombre / Razon Social <span class="req">*</span></label>
-          <input type="text" id="cliente" placeholder="Apellido y nombre o empresa">
-        </div>
-        <div class="field">
-          <label>CUIT / DNI <span class="req">*</span></label>
-          <input type="text" id="cuitCliente" placeholder="20-XXXXXXXX-X">
-        </div>
-        <div class="field">
-          <label>Estado Civil</label>
-          <select id="estadoCivil">
-            <option>SOLTERO/A</option>
-            <option>CASADO/A</option>
-            <option>DIVORCIADO/A</option>
-            <option>VIUDO/A</option>
-          </select>
-        </div>
-        <div class="field span2">
-          <label>Direccion</label>
-          <input type="text" id="direccion" placeholder="Calle, numero, ciudad">
-        </div>
-        <div class="field">
-          <label>Telefono</label>
-          <input type="tel" id="telefono" placeholder="Ej: 3541000000">
-        </div>
-        <div class="field">
-          <label>Facturacion</label>
-          <select id="facturacion">
-            <option value="B">B</option>
-            <option value="A">A</option>
-            <option value="C">C</option>
-          </select>
-        </div>
+    <div class="ch"><div class="dot"></div>OPERACION / FINANCIACION</div>
+    <div class="cb">
+      <div class="f"><label>Descripcion <span class="req">*</span></label><input type="text" id="oper" placeholder="Ej: CREDITO - GALICIA $19.064.000"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="dot"></div>DATOS DEL VEHICULO</div>
+    <div class="cb">
+      <div class="g2">
+        <div class="f"><label>Marca <span class="req">*</span></label><input type="text" id="marca" placeholder="RENAULT"></div>
+        <div class="f"><label>Modelo <span class="req">*</span></label><input type="text" id="modelo" placeholder="KWID OUTSIDER"></div>
+        <div class="f"><label>Año</label><input type="number" id="anio" placeholder="2025"></div>
+        <div class="f"><label>Tipo</label><input type="text" id="tipo" placeholder="HATCHBACK 5P"></div>
+        <div class="f"><label>Procedencia</label><input type="text" id="proc" placeholder="ARGENTINA"></div>
+        <div class="f"><label>Color</label><input type="text" id="color" placeholder="BLANCO GLACIAR"></div>
+        <div class="f"><label>Chasis</label><input type="text" id="chasis" placeholder="N° de chasis"></div>
+        <div class="f"><label>Motor</label><input type="text" id="motor" placeholder="N° de motor"></div>
       </div>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-header"><div class="dot"></div>OPERACION / FINANCIACION</div>
-    <div class="card-body">
-      <div class="field">
-        <label>Descripcion de la Operacion <span class="req">*</span></label>
-        <input type="text" id="operacion" placeholder="Ej: CREDITO - GALICIA $19.064.000">
+    <div class="ch"><div class="dot"></div>PRECIO</div>
+    <div class="cb" style="display:flex;flex-direction:column;gap:16px;">
+      <div class="g3">
+        <div class="f"><label>Precio Total con IVA <span class="req">*</span></label><input type="number" id="precio" placeholder="34000000" oninput="recalc()"></div>
+        <div class="f"><label>Validez (dias)</label><input type="number" id="validez" value="10"></div>
+        <div class="f"><label>Patentamiento</label>
+          <select id="patente"><option value="no">NO incluye</option><option value="si">SI incluye</option></select>
+        </div>
+      </div>
+      <div class="tbox">
+        <div class="tr"><span class="l">Valor Neto S/IVA</span><span class="r" id="tneto">$0</span></div>
+        <div class="tr"><span class="l" id="tivalbl">IVA 21%</span><span class="r" id="tiva">$0</span></div>
+        <div class="tr big"><span class="l">TOTAL</span><span class="r" id="ttotal">$0</span></div>
       </div>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-header"><div class="dot"></div>DATOS DEL VEHICULO</div>
-    <div class="card-body">
-      <div class="form-grid">
-        <div class="field">
-          <label>Marca <span class="req">*</span></label>
-          <input type="text" id="marca" placeholder="Ej: RENAULT">
-        </div>
-        <div class="field">
-          <label>Modelo <span class="req">*</span></label>
-          <input type="text" id="modelo" placeholder="Ej: KWID OUTSIDER">
-        </div>
-        <div class="field">
-          <label>Año</label>
-          <input type="number" id="anio" placeholder="2025" min="2000" max="2030">
-        </div>
-        <div class="field">
-          <label>Tipo</label>
-          <input type="text" id="tipo" placeholder="Ej: HATCHBACK 5P">
-        </div>
-        <div class="field">
-          <label>Procedencia</label>
-          <input type="text" id="procedencia" placeholder="Ej: ARGENTINA">
-        </div>
-        <div class="field">
-          <label>Color</label>
-          <input type="text" id="color" placeholder="Ej: BLANCO GLACIAR">
-        </div>
-        <div class="field">
-          <label>Chasis</label>
-          <input type="text" id="chasis" placeholder="N° de chasis">
-        </div>
-        <div class="field">
-          <label>Motor</label>
-          <input type="text" id="motor" placeholder="N° de motor">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header"><div class="dot"></div>PRECIO</div>
-    <div class="card-body" style="display:flex;flex-direction:column;gap:16px;">
-      <div class="form-grid three">
-        <div class="field">
-          <label>Precio Total con IVA <span class="req">*</span></label>
-          <input type="number" id="precioTotal" placeholder="Ej: 34000000" oninput="recalcular()">
-        </div>
-        <div class="field">
-          <label>Validez (dias)</label>
-          <input type="number" id="validez" value="10" min="1" max="60">
-        </div>
-        <div class="field">
-          <label>Patentamiento</label>
-          <select id="incluirPatente">
-            <option value="no">NO incluye</option>
-            <option value="si">SI incluye</option>
-          </select>
-        </div>
-      </div>
-      <div class="totales-box">
-        <div class="trow"><span class="lbl">Valor Neto S/IVA</span><span class="val" id="t_neto">$0</span></div>
-        <div class="trow"><span class="lbl" id="t_ivaLbl">IVA 21%</span><span class="val" id="t_iva">$0</span></div>
-        <div class="trow total"><span class="lbl">TOTAL</span><span class="val" id="t_total">$0</span></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header"><div class="dot"></div>FOTOS DE DNI (hasta 3 titulares)</div>
-    <div class="card-body">
-      <div class="foto-grid" id="fotoGrid"></div>
+    <div class="ch"><div class="dot"></div>FOTOS DE DNI (hasta 3 titulares)</div>
+    <div class="cb">
+      <div class="foto-grid" id="fgrid"></div>
       <p style="font-size:11px;color:#aaa;margin-top:12px;">Carga frente y dorso del DNI de cada titular. Se incluyen en el PDF.</p>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-header"><div class="dot"></div>OBSERVACIONES</div>
-    <div class="card-body">
-      <div class="field">
-        <label>Texto adicional (opcional)</label>
-        <textarea id="observaciones" rows="3" placeholder="Aclaraciones especiales, accesorios incluidos, etc."></textarea>
-      </div>
+    <div class="ch"><div class="dot"></div>OBSERVACIONES</div>
+    <div class="cb">
+      <div class="f"><label>Texto adicional (opcional)</label><textarea id="obs" rows="3" placeholder="Aclaraciones, accesorios, etc."></textarea></div>
     </div>
   </div>
 
 </div>
 
+<!-- PREVIEW OCULTO PARA PDF -->
+<div id="preview"></div>
+
 <div id="toast"></div>
 
 <script>
-// ── LABELS DNI ──
-const LABELS = [
+const FLABELS = [
   'DNI Titular 1 - Frente','DNI Titular 1 - Dorso',
   'DNI Titular 2 - Frente','DNI Titular 2 - Dorso',
   'DNI Titular 3 - Frente','DNI Titular 3 - Dorso'
 ];
-const fotos = {}; // idx -> dataURL
+const fotos = {};
 
-// ── INIT SLOTS ──
+// ── INIT FOTOS ──
 function initFotos() {
-  const grid = document.getElementById('fotoGrid');
+  var grid = document.getElementById('fgrid');
   grid.innerHTML = '';
-  for (let i = 0; i < 6; i++) {
-    const slot = document.createElement('div');
-    slot.className = 'foto-slot';
-    slot.id = 'fslot' + i;
-    slot.innerHTML =
-      '<input class="file-input" type="file" accept="image/*">' +
-      '<div class="ph">' +
-        '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' +
-        '<p>' + LABELS[i] + '</p>' +
-      '</div>' +
-      '<button class="rbtn" type="button">x</button>' +
-      '<div class="flabel">' + LABELS[i] + '</div>';
-    // Evento cargar
-    slot.querySelector('.file-input').addEventListener('change', (function(idx){ return function(e){ cargar(idx, e.target.files[0]); }; })(i));
-    // Evento remover
-    slot.querySelector('.rbtn').addEventListener('click', (function(idx){ return function(e){ e.preventDefault(); e.stopPropagation(); remover(idx); }; })(i));
-    grid.appendChild(slot);
+  for (var i = 0; i < 6; i++) {
+    (function(idx) {
+      var slot = document.createElement('div');
+      slot.className = 'fslot';
+      slot.id = 'fs' + idx;
+
+      var inp = document.createElement('input');
+      inp.type = 'file';
+      inp.accept = 'image/*';
+      inp.addEventListener('change', function() {
+        if (this.files && this.files[0]) cargarFoto(idx, this.files[0]);
+      });
+
+      var ph = document.createElement('div');
+      ph.className = 'fph';
+      ph.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><p>' + FLABELS[idx] + '</p>';
+
+      var xbtn = document.createElement('button');
+      xbtn.className = 'xbtn';
+      xbtn.type = 'button';
+      xbtn.textContent = '×';
+      xbtn.addEventListener('click', function(e) {
+        e.preventDefault(); e.stopPropagation();
+        removerFoto(idx);
+      });
+
+      var lbl = document.createElement('div');
+      lbl.className = 'flbl';
+      lbl.textContent = FLABELS[idx];
+
+      slot.appendChild(inp);
+      slot.appendChild(ph);
+      slot.appendChild(xbtn);
+      slot.appendChild(lbl);
+      grid.appendChild(slot);
+    })(i);
   }
 }
 
-function cargar(idx, file) {
-  if (!file) return;
-  const reader = new FileReader();
+function cargarFoto(idx, file) {
+  var reader = new FileReader();
   reader.onload = function(e) {
     fotos[idx] = e.target.result;
-    const slot = document.getElementById('fslot' + idx);
-    let img = slot.querySelector('img');
-    if (!img) { img = document.createElement('img'); slot.appendChild(img); }
+    var slot = document.getElementById('fs' + idx);
+    var img = slot.querySelector('img');
+    if (!img) { img = document.createElement('img'); slot.insertBefore(img, slot.querySelector('.flbl')); }
     img.src = e.target.result;
-    slot.querySelector('.ph').style.display = 'none';
-    slot.querySelector('.rbtn').style.display = 'flex';
+    slot.querySelector('.fph').style.display = 'none';
+    slot.querySelector('.xbtn').style.display = 'flex';
   };
   reader.readAsDataURL(file);
 }
 
-function remover(idx) {
+function removerFoto(idx) {
   delete fotos[idx];
-  const slot = document.getElementById('fslot' + idx);
-  const img = slot.querySelector('img');
+  var slot = document.getElementById('fs' + idx);
+  var img = slot.querySelector('img');
   if (img) img.remove();
-  slot.querySelector('.ph').style.display = '';
-  slot.querySelector('.rbtn').style.display = 'none';
-  slot.querySelector('.file-input').value = '';
+  slot.querySelector('.fph').style.display = '';
+  slot.querySelector('.xbtn').style.display = 'none';
+  slot.querySelector('input[type=file]').value = '';
 }
 
-// ── RECALCULAR TOTALES ──
-function recalcular() {
-  const total = parseFloat(document.getElementById('precioTotal').value) || 0;
-  const pct = parseFloat(document.querySelector('input[name="tipoIVA"]:checked').value) / 100;
-  const neto = total / (1 + pct);
-  const iva = total - neto;
-  document.getElementById('t_neto').textContent = pesos(neto);
-  document.getElementById('t_ivaLbl').textContent = 'IVA ' + Math.round(pct * 100) + '%';
-  document.getElementById('t_iva').textContent = pesos(iva);
-  document.getElementById('t_total').textContent = pesos(total);
+// ── RECALCULAR ──
+function recalc() {
+  var total = parseFloat(document.getElementById('precio').value) || 0;
+  var pct = parseFloat(document.querySelector('input[name="iva"]:checked').value) / 100;
+  var neto = total / (1 + pct);
+  var iva = total - neto;
+  document.getElementById('tneto').textContent = fmt(neto);
+  document.getElementById('tivalbl').textContent = 'IVA ' + Math.round(pct * 100) + '%';
+  document.getElementById('tiva').textContent = fmt(iva);
+  document.getElementById('ttotal').textContent = fmt(total);
 }
 
-function pesos(n) {
-  return '$' + Math.round(n).toLocaleString('es-AR');
-}
+function fmt(n) { return '$' + Math.round(n).toLocaleString('es-AR'); }
+function fmtN(n) { return Math.round(n).toLocaleString('es-AR'); }
 
-function pesosNum(n) {
-  return Math.round(n).toLocaleString('es-AR');
-}
-
-// ── TOAST ──
-function toast(msg, err) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'show' + (err ? ' err' : '');
-  setTimeout(function(){ t.className = ''; }, 3500);
-}
-
-// ── VALOR CAMPO ──
-function v(id) { return (document.getElementById(id) ? document.getElementById(id).value.trim() : ''); }
-
-// ── SANITIZAR para jsPDF (helvetica no soporta tildes ni enie) ──
-function s(str) {
-  if (str === null || str === undefined) return '';
-  return String(str)
-    .replace(/[áàäâ]/gi,'a').replace(/[éèëê]/gi,'e').replace(/[íìïî]/gi,'i')
-    .replace(/[óòöô]/gi,'o').replace(/[úùüû]/gi,'u').replace(/ñ/gi,'n')
-    .replace(/[^\x20-\x7E]/g,'');
+function gv(id) {
+  var el = document.getElementById(id);
+  return el ? el.value.trim() : '';
 }
 
 // ── NUMERO EN LETRAS ──
@@ -377,293 +343,193 @@ function enLetras(n) {
   try {
     n = Math.round(n);
     if (!n || isNaN(n)) return 'CERO';
-    const U=['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISEIS','DIECISIETE','DIECIOCHO','DIECINUEVE','VEINTE'];
-    const D=['','','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
-    const C=['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];
-    function d2(n){
-      if(n<=20) return U[n];
-      if(n<30) return 'VEINTI'+U[n-20];
-      return D[Math.floor(n/10)]+(n%10?' Y '+U[n%10]:'');
+    var U=['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISEIS','DIECISIETE','DIECIOCHO','DIECINUEVE','VEINTE'];
+    var D=['','','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
+    var C=['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];
+    function d2(x){if(x<=20)return U[x];if(x<30)return 'VEINTI'+U[x-20];return D[Math.floor(x/10)]+(x%10?' Y '+U[x%10]:'');}
+    function d3(x){if(x===100)return 'CIEN';return C[Math.floor(x/100)]+(x%100?' '+d2(x%100):'');}
+    function d6(x){if(x<100)return d2(x);if(x<1000)return d3(x);var m=Math.floor(x/1000),r=x%1000;return(m===1?'MIL':d6(m)+' MIL')+(r?' '+d6(r):'');}
+    if(n<1000000)return d6(n);
+    var m=Math.floor(n/1000000),r=n%1000000;
+    return(m===1?'UN MILLON':d6(m)+' MILLONES')+(r?' '+d6(r):'');
+  } catch(e){return '';}
+}
+
+// ── TOAST ──
+function toast(msg, isErr) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (isErr ? ' err' : '');
+  setTimeout(function(){ t.className = ''; }, 3500);
+}
+
+// ── CONSTRUIR HTML PROFORMA PARA RENDERIZAR ──
+function buildPreview() {
+  var pct = parseFloat(document.querySelector('input[name="iva"]:checked').value);
+  var total = parseFloat(gv('precio')) || 0;
+  var neto = total / (1 + pct/100);
+  var iva = total - neto;
+  var fechaRaw = gv('fecha');
+  var fecha = fechaRaw ? new Date(fechaRaw + 'T00:00:00').toLocaleDateString('es-AR') : new Date().toLocaleDateString('es-AR');
+  var validez = gv('validez') || '10';
+  var patente = gv('patente') === 'si' ? 'SI INCLUYE PATENTAMIENTO.' : 'NO INCLUYE PATENTAMIENTO.';
+
+  function row(label, val) {
+    return '<div class="pv-field"><div class="pv-label">'+label+'</div><div class="pv-val">'+(val||'—')+'</div></div>';
+  }
+  function row2(label, val) {
+    return '<div class="pv-field w2"><div class="pv-label">'+label+'</div><div class="pv-val">'+(val||'—')+'</div></div>';
+  }
+
+  var dniPages = '';
+  var dniKeys = [];
+  for (var k in fotos) { if (fotos.hasOwnProperty(k)) dniKeys.push(parseInt(k)); }
+  dniKeys.sort();
+
+  if (dniKeys.length > 0) {
+    var dniItems = '';
+    var currentTit = -1;
+    for (var di = 0; di < dniKeys.length; di++) {
+      var ki = dniKeys[di];
+      var titNum = Math.floor(ki / 2) + 1;
+      if (titNum !== currentTit) {
+        if (currentTit !== -1) dniItems += '</div>';
+        dniItems += '<div class="pv-tit">TITULAR ' + titNum + '</div><div class="pv-dni-grid" style="padding:8px 20px;">';
+        currentTit = titNum;
+      }
+      dniItems += '<div class="pv-dni-slot"><div class="pv-dni-lbl">' + FLABELS[ki] + '</div><img src="' + fotos[ki] + '"></div>';
     }
-    function d3(n){
-      if(n===100) return 'CIEN';
-      return C[Math.floor(n/100)]+(n%100?' '+d2(n%100):'');
-    }
-    function d6(n){
-      if(n<100) return d2(n);
-      if(n<1000) return d3(n);
-      const m=Math.floor(n/1000),r=n%1000;
-      return (m===1?'MIL':d6(m)+' MIL')+(r?' '+d6(r):'');
-    }
-    if(n<1000000) return d6(n);
-    const m=Math.floor(n/1000000),r=n%1000000;
-    return (m===1?'UN MILLON':d6(m)+' MILLONES')+(r?' '+d6(r):'');
-  } catch(e){ return String(n); }
+    if (currentTit !== -1) dniItems += '</div>';
+
+    dniPages = '<div style="page-break-before:always;">' +
+      '<div class="pv-dni-header"><div style="font-size:16px;font-weight:700;">FOTOS DE DNI</div>' +
+      '<div style="font-size:10px;opacity:.8;">' + gv('cliente') + ' — ' + gv('marca') + ' ' + gv('modelo') + '</div></div>' +
+      dniItems + '</div>';
+  }
+
+  return '<div class="pv-header">' +
+    '<div><div class="hl">TUTU AUTOMOTORES</div><div class="hs">' + gv('empresa') + ' — CUIT ' + gv('cuitEmp') + ' — ' + gv('condiva') + '</div></div>' +
+    '<div class="hr"><div style="font-size:11px;opacity:.8;">FACTURA PROFORMA</div><div class="hn">N° ' + (gv('nro')||'—') + '</div><div style="font-size:10px;opacity:.75;">Fecha: ' + fecha + ' &nbsp;|&nbsp; Tipo: ' + gv('tipoFact') + '</div></div>' +
+    '</div>' +
+    '<div class="pv-sep"></div>' +
+    '<div class="pv-body">' +
+
+    '<div class="pv-sec"><div class="pv-sec-title">DATOS DEL CLIENTE</div>' +
+    '<div class="pv-row">' + row2('Senores', gv('cliente')) + row('CUIT/DNI', gv('cuitCli')) + row('Estado Civil', gv('ecivil')) + '</div>' +
+    '<div class="pv-row">' + row2('Direccion', gv('dir')) + row('Telefono', gv('tel')) + row('Facturacion', gv('fact')) + '</div>' +
+    '<div class="pv-row">' + row2('Operacion', gv('oper')) + '</div>' +
+    '</div>' +
+
+    '<div class="pv-sec"><div class="pv-sec-title">VEHICULO</div>' +
+    '<div class="pv-auto-row"><div class="pv-auto-name">UN AUTOMOVIL 0 KM.</div><div class="pv-auto-price">$ ' + fmtN(total) + '</div></div>' +
+    '<div class="pv-grid3">' + row('Marca',gv('marca')) + row('Modelo',gv('modelo')) + row('Ano',gv('anio')) + '</div>' +
+    '<div class="pv-grid3">' + row('Tipo',gv('tipo')) + row('Procedencia',gv('proc')) + row('Color',gv('color')) + '</div>' +
+    '<div class="pv-grid3">' + row('Chasis',gv('chasis')) + row('Motor',gv('motor')) + '<div></div></div>' +
+    '</div>' +
+
+    '<div class="pv-sec"><div class="pv-sec-title">DETALLE DE PRECIOS</div>' +
+    '<div class="pv-prices">' +
+    '<div class="pv-pr"><span class="pl">Valor Neto S/IVA:</span><span class="pv">$ ' + fmtN(neto) + '</span></div>' +
+    '<div class="pv-pr"><span class="pl">IVA ' + pct + '%:</span><span class="pv">$ ' + fmtN(iva) + '</span></div>' +
+    '<div class="pv-pr ptotal"><span class="pl">TOTAL:</span><span class="pv">$ ' + fmtN(total) + '</span></div>' +
+    '</div>' +
+    '<div style="clear:both;"></div>' +
+    '<div class="pv-letras">SON PESOS: ' + enLetras(total) + ' PESOS</div>' +
+    '</div>' +
+
+    (gv('obs') ? '<div class="pv-sec"><div class="pv-sec-title">OBSERVACIONES</div><p style="font-size:11px;padding:4px 0;">' + gv('obs') + '</p></div>' : '') +
+
+    '<div class="pv-avisos">' +
+    '<div class="pv-aviso">• Esta factura tiene una validez de ' + validez + ' dias desde la fecha de emision.</div>' +
+    '<div class="pv-aviso">• La factura definitiva se emitira en pesos al cambio del dolar del dia.</div>' +
+    '<div class="pv-aviso">• Precios sujetos a modificacion.</div>' +
+    '<div class="pv-aviso">• NO INCLUYE FLETE, FORMULARIOS Y PREENTREGA.</div>' +
+    '<div class="pv-aviso">• ' + patente + '</div>' +
+    '</div>' +
+
+    '<div style="overflow:hidden;margin-top:20px;">' +
+    '<div class="pv-firma">' +
+    '<div class="pv-firma-name">' + gv('empresa') + '</div>' +
+    '<div class="pv-firma-cuit">CUIT ' + gv('cuitEmp') + '</div>' +
+    '</div></div>' +
+
+    '</div>' +
+    dniPages;
 }
 
 // ── GENERAR PDF ──
-function generarPDF() {
-  // Validaciones
-  if (!v('cliente')) { toast('Falta el nombre del cliente', true); return; }
-  if (!v('precioTotal') || parseFloat(v('precioTotal')) <= 0) { toast('Ingresa el precio total', true); return; }
-  if (!v('marca') || !v('modelo')) { toast('Falta marca o modelo del vehiculo', true); return; }
+async function generarPDF() {
+  if (!gv('cliente')) { toast('Falta el nombre del cliente', true); return; }
+  if (!gv('precio') || parseFloat(gv('precio')) <= 0) { toast('Ingresa el precio total', true); return; }
+  if (!gv('marca') || !gv('modelo')) { toast('Falta marca o modelo', true); return; }
 
-  // Verificar que jsPDF cargó
-  if (!window.jspdf || !window.jspdf.jsPDF) {
-    toast('jsPDF no cargo. Recarga la pagina.', true);
-    return;
-  }
-
-  toast('Generando PDF...');
+  var btn = document.getElementById('btnPDF');
+  btn.disabled = true;
+  btn.textContent = 'Generando...';
+  toast('Generando PDF, espera...');
 
   try {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    const PW=210, PH=297, ML=15, MR=15, CW=180;
+    // Construir preview
+    var preview = document.getElementById('preview');
+    preview.innerHTML = buildPreview();
 
-    const pct = parseFloat(document.querySelector('input[name="tipoIVA"]:checked').value);
-    const total = parseFloat(v('precioTotal')) || 0;
-    const neto = total / (1 + pct/100);
-    const iva = total - neto;
-    const fecha = v('fechaDoc') ? new Date(v('fechaDoc')+'T00:00:00').toLocaleDateString('es-AR') : new Date().toLocaleDateString('es-AR');
+    // Esperar a que las imágenes carguen
+    var imgs = preview.querySelectorAll('img');
+    await Promise.all(Array.from(imgs).map(function(img) {
+      return new Promise(function(resolve) {
+        if (img.complete) resolve();
+        else { img.onload = resolve; img.onerror = resolve; }
+      });
+    }));
 
-    // helpers
-    function txt(text, x, y, opts) {
-      var t = s(String(text === null || text === undefined ? '' : text));
-      if (opts && Object.keys(opts).length > 0) {
-        doc.text(t, x, y, opts);
-      } else {
-        doc.text(t, x, y);
-      }
-    }
-    function bold(size, color) {
-      doc.setFont('helvetica','bold');
-      doc.setFontSize(size||9);
-      if(color){ const h=color.replace('#',''); doc.setTextColor(parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)); }
-      else doc.setTextColor(26,26,46);
-    }
-    function normal(size, color) {
-      doc.setFont('helvetica','normal');
-      doc.setFontSize(size||9);
-      if(color){ const h=color.replace('#',''); doc.setTextColor(parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)); }
-      else doc.setTextColor(127,140,141);
-    }
-    function fillRect(x,y,w,h,hex){
-      const c=hex.replace('#','');
-      doc.setFillColor(parseInt(c.slice(0,2),16),parseInt(c.slice(2,4),16),parseInt(c.slice(4,6),16));
-      doc.rect(x,y,w,h,'F');
-    }
-    function strokeLine(x1,y1,x2,y2,hex,lw){
-      const c=(hex||'#dddddd').replace('#','');
-      doc.setDrawColor(parseInt(c.slice(0,2),16),parseInt(c.slice(2,4),16),parseInt(c.slice(4,6),16));
-      doc.setLineWidth(lw||0.3);
-      doc.line(x1,y1,x2,y2);
-    }
-    function secHeader(y, label) {
-      fillRect(ML, y, CW, 7, '#2c3e50');
-      bold(8,'#ffffff');
-      txt(label, ML+4, y+5);
-      return y+10;
+    // Render con html2canvas
+    var canvas = await html2canvas(preview, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false
+    });
+
+    var imgData = canvas.toDataURL('image/jpeg', 0.92);
+    var imgW = canvas.width;
+    var imgH = canvas.height;
+
+    // Crear PDF
+    var { jsPDF } = window.jspdf;
+    var pdf = new jsPDF({ unit: 'px', format: 'a4', orientation: 'portrait' });
+    var pageW = pdf.internal.pageSize.getWidth();
+    var pageH = pdf.internal.pageSize.getHeight();
+    var ratio = pageW / imgW;
+    var totalH = imgH * ratio;
+
+    // Agregar páginas según altura
+    var posY = 0;
+    while (posY < totalH) {
+      if (posY > 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, -posY, pageW, totalH);
+      posY += pageH;
     }
 
-    let y = 15;
+    var nombre = gv('cliente').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+    var nro = gv('nro') || 'SN';
+    pdf.save('Proforma_' + nro + '_' + nombre + '.pdf');
 
-    // ── HEADER ──
-    fillRect(0, 0, PW, 22, '#c0392b');
-    bold(18,'#ffffff');
-    txt('TUTU AUTOMOTORES', ML, 13);
-    normal(8,'#ffcccc');
-    txt(s(v('empresa'))+' - CUIT '+s(v('cuitEmpresa'))+' - IVA RESPONSABLE INSCRIPTO', ML, 19);
-    bold(9,'#ffffff');
-    txt('FACTURA PROFORMA', PW-MR, 9, {align:'right'});
-    bold(15,'#ffe0e0');
-    txt('N ' + (v('nroProforma')||'--'), PW-MR, 17, {align:'right'});
-
-    y = 28;
-    normal(9); doc.setTextColor(127,140,141);
-    txt('Fecha:', ML, y);
-    bold(9,'#1a1a2e');
-    txt(fecha, ML+13, y);
-    txt('Factura tipo:', ML+50, y);
-    bold(10,'#c0392b');
-    txt(v('tipoFactura'), ML+78, y);
-
-    y += 7;
-    strokeLine(ML, y, PW-MR, y, '#c0392b', 0.6);
-    y += 6;
-
-    // ── CLIENTE ──
-    y = secHeader(y, 'DATOS DEL CLIENTE');
-
-    function fila(label, valor, x, yy, maxW) {
-      normal(7,'#7f8c8d'); txt(label, x, yy);
-      bold(8,'#1a1a2e');
-      const lineas = doc.splitTextToSize(s(valor||'--'), maxW);
-      txt(lineas && lineas[0] ? lineas[0] : '', x, yy+5);
-    }
-
-    fila('SENORES:', v('cliente'), ML, y, 78);
-    fila('CUIT/DNI:', v('cuitCliente'), ML+95, y, 70);
-    y += 10;
-    fila('DIRECCION:', v('direccion'), ML, y, 90);
-    fila('TEL:', v('telefono'), ML+95, y, 40);
-    y += 10;
-    fila('FACTURACION:', v('facturacion'), ML, y, 20);
-    fila('ESTADO CIVIL:', v('estadoCivil'), ML+32, y, 40);
-    y += 10;
-    fila('OPERACION:', v('operacion'), ML, y, 170);
-    y += 10;
-
-    strokeLine(ML, y, PW-MR, y, '#c0392b', 0.6);
-    y += 6;
-
-    // ── VEHICULO ──
-    y = secHeader(y, 'VEHICULO');
-
-    bold(10,'#c0392b');
-    txt('UN AUTOMOVIL 0 KM.', ML, y+4);
-    bold(13,'#1a1a2e');
-    txt('$ '+pesosNum(total), PW-MR, y+4, {align:'right'});
-    y += 12;
-
-    const vc = [[ML,'MARCA',v('marca')],[ML+62,'MODELO',v('modelo')],[ML+124,'ANIO',v('anio')]];
-    vc.forEach(function(r){ fila(r[1]+':', r[2], r[0], y, 58); });
-    y += 10;
-    const vc2 = [[ML,'TIPO',v('tipo')],[ML+62,'PROCEDENCIA',v('procedencia')],[ML+124,'COLOR',v('color')]];
-    vc2.forEach(function(r){ fila(r[1]+':', r[2], r[0], y, 58); });
-    y += 10;
-    fila('CHASIS:', v('chasis'), ML, y, 85);
-    fila('MOTOR:', v('motor'), ML+92, y, 80);
-    y += 12;
-
-    strokeLine(ML, y, PW-MR, y, '#c0392b', 0.6);
-    y += 6;
-
-    // ── PRECIOS ──
-    y = secHeader(y, 'DETALLE DE PRECIOS');
-
-    const rx = PW-MR;
-    const lx = ML+90;
-
-    function priceRow(label, val, isTotal) {
-      if(isTotal){
-        fillRect(lx-4, y-1, rx-lx+4, 10, '#fff5f5');
-        bold(10,'#c0392b'); txt(label, lx, y+6);
-        bold(14,'#c0392b'); txt(val, rx, y+6, {align:'right'});
-        y += 12;
-      } else {
-        normal(8,'#7f8c8d'); txt(label, lx, y);
-        bold(9,'#1a1a2e'); txt(val, rx, y, {align:'right'});
-        y += 6;
-        strokeLine(lx, y-1, rx, y-1, '#eeeeee', 0.2);
-      }
-    }
-
-    priceRow('Valor Neto S/IVA:', '$ '+pesosNum(neto));
-    priceRow('IVA '+pct+'%:', '$ '+pesosNum(iva));
-    y += 2;
-    priceRow('TOTAL:', '$ '+pesosNum(total), true);
-
-    // En letras
-    normal(7,'#7f8c8d'); txt('SON PESOS:', ML, y);
-    bold(8,'#1a1a2e');
-    const letras = enLetras(total) + ' PESOS';
-    const ll = doc.splitTextToSize(s(letras), CW-28);
-    if(ll && ll.length) doc.text(ll.map(function(x){return s(x);}), ML+26, y);
-    y += ll.length * 5 + 4;
-
-    strokeLine(ML, y, PW-MR, y, '#c0392b', 0.6);
-    y += 5;
-
-    // ── OBSERVACIONES ──
-    const obs = v('observaciones');
-    if(obs) {
-      bold(8,'#7f8c8d'); txt('OBSERVACIONES:', ML, y); y+=5;
-      normal(8,'#1a1a2e');
-      const ol = doc.splitTextToSize(s(obs), CW);
-      if(ol && ol.length) doc.text(ol.map(function(x){return s(x);}), ML, y); y += (ol?ol.length:1)*5+4;
-    }
-
-    // ── AVISOS PIE ──
-    y = Math.max(y+4, PH-52);
-    strokeLine(ML, y, PW-MR, y, '#dddddd', 0.3); y+=5;
-    normal(7,'#999999');
-    const validez = v('validez')||'10';
-    const patente = v('incluirPatente')==='si' ? 'SI INCLUYE PATENTAMIENTO.' : 'NO INCLUYE PATENTAMIENTO.';
-    [
-      'Esta factura tiene una validez de '+validez+' dias desde la fecha de emision.',
-      'La factura definitiva se emitira en pesos al cambio del dolar del dia.',
-      'Precios sujetos a modificacion.',
-      'NO INCLUYE FLETE, FORMULARIOS Y PREENTREGA.',
-      patente
-    ].forEach(function(a){ txt('- '+a, ML, y); y+=4.5; });
-
-    // Firma
-    y += 4;
-    strokeLine(PW-MR-52, y, PW-MR, y, '#1a1a2e', 0.4); y+=5;
-    bold(8,'#1a1a2e'); txt(v('empresa'), PW-MR, y, {align:'right'}); y+=4;
-    normal(7,'#999'); txt('CUIT '+v('cuitEmpresa'), PW-MR, y, {align:'right'});
-
-    // ── PÁGINA 2: DNI ──
-    const keys = Object.keys(fotos);
-    if(keys.length > 0) {
-      doc.addPage();
-      fillRect(0, 0, PW, 18, '#c0392b');
-      bold(13,'#ffffff'); txt('FOTOS DE DNI', ML, 12);
-      normal(8,'#ffcccc');
-      txt(s(v('marca')+' '+v('modelo')+' - '+v('cliente')), PW-MR, 12, {align:'right'});
-
-      const fW = (CW-10)/2;
-      const fH = 46;
-      let fi = 0;
-      for(let i=0; i<6; i++){
-        if(!fotos[i]) continue;
-        const col = fi % 2;
-        const row = Math.floor(fi / 2);
-        const fx = ML + col*(fW+10);
-        const fy = 24 + row*(fH+16);
-        // Encabezado titular
-        if(col===0){
-          const tit = 'TITULAR '+(row+1);
-          bold(8,'#c0392b'); txt(tit, ML, fy-3);
-          strokeLine(ML+20, fy-4, PW-MR, fy-4, '#c0392b', 0.3);
-        }
-        // Insertar imagen
-        try {
-          const du = fotos[i];
-          const mime = du.substring(du.indexOf(':')+1, du.indexOf(';'));
-          const ext = mime.split('/')[1].toUpperCase().replace('JPEG','JPEG').replace('JPG','JPEG');
-          const fmt = ['JPEG','PNG','WEBP','GIF'].includes(ext) ? ext : 'JPEG';
-          doc.addImage(du, fmt, fx, fy, fW, fH);
-        } catch(e2) {
-          fillRect(fx, fy, fW, fH, '#f5f5f5');
-          normal(8,'#aaaaaa'); txt('Imagen no disponible', fx+fW/2, fy+fH/2, {align:'center'});
-        }
-        // Borde + label
-        doc.setDrawColor(200,200,200); doc.setLineWidth(0.3);
-        doc.rect(fx, fy, fW, fH, 'D');
-        normal(7,'#555555'); txt(LABELS[i], fx+fW/2, fy+fH+5, {align:'center'});
-        fi++;
-      }
-    }
-
-    // Guardar
-    const nombre = s(v('cliente')).replace(/\s+/g,'_').substring(0,25);
-    const nro = v('nroProforma')||'SN';
-    doc.save('Proforma_'+nro+'_'+nombre+'.pdf');
     toast('PDF generado correctamente');
-
   } catch(err) {
     console.error(err);
     toast('Error: ' + (err.message || String(err)), true);
   }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg> GENERAR PDF';
 }
 
-// ── INICIO ──
-document.addEventListener('DOMContentLoaded', function(){
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', function() {
   initFotos();
-  document.getElementById('fechaDoc').valueAsDate = new Date();
-  recalcular();
+  document.getElementById('fecha').valueAsDate = new Date();
+  recalc();
 });
 </script>
 </body>
