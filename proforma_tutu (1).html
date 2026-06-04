@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proforma — Tutu Automotores</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@500;700;800&display=swap');
+
+  :root {
+    --rojo: #c0392b;
+    --rojo-dark: #96281b;
+    --gris: #2c3e50;
+    --gris-light: #ecf0f1;
+    --borde: #dde1e7;
+    --texto: #1a1a2e;
+    --acento: #e74c3c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: #f0f2f5;
+    color: var(--texto);
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  .app-header {
+    background: var(--gris);
+    color: white;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .app-header .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+  .app-header .brand {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: white;
+  }
+  .app-header .brand span { color: var(--acento); }
+  .app-header .subtitle {
+    font-size: 11px;
+    opacity: 0.6;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .btn-generar {
+    background: var(--rojo);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-generar:hover { background: var(--rojo-dark); transform: translateY(-1px); }
+  .btn-generar:active { transform: translateY(0); }
+  .btn-generar svg { width: 18px; height: 18px; }
+
+  /* ===== LAYOUT ===== */
+  .container {
+    max-width: 860px;
+    margin: 28px auto;
+    padding: 0 16px 60px;
+  }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .card-header {
+    background: var(--gris);
+    color: white;
+    padding: 12px 20px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-header .dot {
+    width: 8px; height: 8px;
+    background: var(--acento);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .card-body { padding: 20px; }
+
+  /* ===== FORM GRID ===== */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .form-grid.full { grid-template-columns: 1fr; }
+  @media (max-width: 600px) {
+    .form-grid, .form-grid.three { grid-template-columns: 1fr; }
+  }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.span2 { grid-column: span 2; }
+  @media (max-width: 600px) { .field.span2 { grid-column: span 1; } }
+
+  label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #7f8c8d;
+  }
+  label .req { color: var(--acento); margin-left: 2px; }
+
+  input, select, textarea {
+    border: 1.5px solid var(--borde);
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    color: var(--texto);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: white;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--rojo);
+    box-shadow: 0 0 0 3px rgba(192,57,43,0.1);
+  }
+  textarea { resize: vertical; min-height: 70px; }
+  select { appearance: none; cursor: pointer; }
+
+  /* ===== TIPO IVA TOGGLE ===== */
+  .tipo-toggle {
+    display: flex;
+    border: 1.5px solid var(--borde);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .tipo-toggle label {
+    flex: 1;
+    text-align: center;
+    padding: 9px 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--texto);
+    transition: background 0.15s, color 0.15s;
+    border-right: 1.5px solid var(--borde);
+  }
+  .tipo-toggle label:last-child { border-right: none; }
+  .tipo-toggle input[type="radio"] { display: none; }
+  .tipo-toggle input[type="radio"]:checked + label {
+    background: var(--rojo);
+    color: white;
+  }
+
+  /* ===== FOTO UPLOAD ===== */
+  .foto-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 500px) { .foto-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .foto-slot {
+    aspect-ratio: 16/10;
+    border: 2px dashed var(--borde);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+    background: #fafafa;
+  }
+  .foto-slot:hover { border-color: var(--rojo); background: #fef9f9; }
+  .foto-slot input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    border: none;
+    padding: 0;
+  }
+  .foto-slot .placeholder {
+    pointer-events: none;
+    text-align: center;
+    padding: 8px;
+  }
+  .foto-slot .placeholder svg { opacity: 0.3; margin-bottom: 6px; }
+  .foto-slot .placeholder p {
+    font-size: 11px;
+    color: #999;
+    font-weight: 500;
+  }
+  .foto-slot img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+  .foto-slot .remove-btn {
+    position: absolute;
+    top: 4px; right: 4px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 22px; height: 22px;
+    font-size: 13px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    pointer-events: all;
+  }
+  .foto-slot:hover .remove-btn { display: flex; }
+  .foto-slot .foto-label {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.55);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    text-align: center;
+    padding: 3px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== RESUMEN DE TOTALES ===== */
+  .totales-box {
+    background: #f8f9fa;
+    border: 1.5px solid var(--borde);
+    border-radius: 8px;
+    padding: 16px 20px;
+  }
+  .totales-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--borde);
+    font-size: 14px;
+  }
+  .totales-row:last-child { border-bottom: none; }
+  .totales-row .lbl { color: #7f8c8d; font-weight: 500; }
+  .totales-row .val { font-weight: 600; color: var(--texto); }
+  .totales-row.total .lbl { font-size: 16px; font-weight: 700; color: var(--texto); }
+  .totales-row.total .val { font-size: 18px; font-weight: 800; color: var(--rojo); }
+
+  /* ===== TOAST ===== */
+  #toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--gris);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 9999;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.error { background: var(--rojo); }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo-area">
+    <div>
+      <div class="brand">TUTU <span>AUTOMOTORES</span></div>
+      <div class="subtitle">Generador de Proforma</div>
+    </div>
+  </div>
+  <button class="btn-generar" onclick="generarPDF()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+    GENERAR PDF
+  </button>
+</header>
+
+<div class="container">
+
+  <!-- TIPO DE OPERACIÓN -->
+  <div class="card">
+    <div class="card-header"><div class="dot"></div>TIPO DE OPERACIÓN</div>
+    <div class="card-body">
+      <div class="form-grid three">
+        <div class="field">
+          <label>Tipo de IVA<span class="req">*</span></label>
+          <div class="tipo-toggle">
+            <input type="radio" name="tipoIVA" id="iva21" value="21" checked onchange="recalcular()">
+            <label for="iva21">IVA 21%</label>
+            <input type="radio" name="tipoIVA" id="iva105" value="10.5" onchange="recalcular()">
+            <label for="iva105">IVA 10.5%</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Nº Proforma <span class="req">*</span></label>
+          <input type="number" id="nroProforma" placeholder="Ej: 45993">
+        </div>
+        <div class="field">
+          <label>Fecha <span class="req">*</span></label>
+          <input type="date" id="fechaDoc">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMPRESA EMISORA -->
+  <div class="card">
+    <div class="card-header"><div class="dot"></div>EMPRESA EMISORA</div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field">
+          <label>Razón Social <span class="req">*</span></label>
+          <input type="text" id="empresa" value="TUTU AUTOMOTORES SAS" placeholder="Razón social">
+        </div>
+        <div class="field">
+          <label>CUIT Empresa <span class="req">*</span></label>
+          <input type="text" id="cuitEmpresa" value="30-71660684-4" placeholder="XX-XXXXXXXX-X">
+        </div>
+        <div class="field">
+          <label>Condición IVA</label>
+          <input type="text" id="condIVA" value="RESPONSABLE INSCRIPTO">
+        </div>
+        <div class="field">
+          <label>Tipo Factura</label>
+          <select id="tipoFactura">
+            <option value="B">B</option>
+            <option value="A">A</option>
+            <option value="C">C</option>
+            <option value="E">E</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLIENTE -->
+  <div class="card">
+    <div class="card-header"><div class="dot"></div>DATOS DEL CLIENTE</div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field span2">
+          <label>Nombre / Razón Social <span class="req">*</span></label>
+          <input type="text" id="cliente" placeholder="Apellido y nombre o empresa">
+        </div>
+        <div class="field">
+          <label>CUIT / DNI <span class="req">*</span></label>
+          <input type="text" id="cuitCliente" placeholder="20-XXXXXXXX-X">
+        </div>
+        <div class="field">
+          <label>Estado Civil</label>
+          <select id="estadoCivil">
+            <option value="SOLTERO/A">SOLTERO/A</option>
+            <option value="CASADO/A">CASADO/A</option>
+            <option value="DIVORCIADO/A">DIVORCIADO/A</option>
+            <option value="VIUDO/A">VIUDO/A</option>
+          </select>
+        </div>
+        <div class="field span2">
+          <label>Dirección</label>
+          <input type="text" id="direccion" placeholder="Calle, número, ciudad">
+        </div>
+        <div class="field">
+          <label>Teléfono</label>
+          <input type="tel" id="telefono" placeholder="Ej: 3541000000">
+        </div>
+        <div class="field">
+          <label>Facturación</label>
+          <select id="facturacion">
+            <option value="B">B</option>
+            <option value="A">A</option>
+            <option value="C">C</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPERACIÓN / FINANCIACIÓN -->
+  <div class="card">
+    <div class="card-header"><div class="dot"></div>OPERACIÓN / FINANCIACIÓN</div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field span2">
+          <label>Descripción de la Operación <span class="req">*</span></label>
+          <input type="text" id="operacion" placeholder="Ej: CREDITO - GALICIA $19.064.000">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VEHÍCULO -->
+  <div class="card">
+    <div class="card-header"><div class="dot"></div>DATOS DEL VEHÍCULO</div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field">
+          <label>Marca <span class="req">*</span></label>
+          <input type="text" id="marca" placeholder="Ej: RENAULT">
+        </div>
+        <div class="field">
+          <label>Modelo <span class="req">*</span></label>
+          <input type="text" id="modelo" placeholder="Ej: KWID OUTSIDER">
+        </div>
+        <div class="field">
+          <label>Año</label>
+          <input type="number" id="anio" placeholder="2025" min="2000" max="2030">
+        </div>
+        <div class="field">
+          <label>Tipo</label>
+          <input type="text" id="tipo" placeholder="Ej: HATCHBACK 5P">
+        </div>
+        <div class="field">
+          <label>Procedencia</label>
+          <input type="text" id="procedencia" placeholder="Ej: ARGENTINA">
+        </div>
+        <div class="field">
+          <label>Chasis</label>
+          <input type="text" id="chasis" placeholder="Nº de chasis">
+        </div>
+        <div class="field">
+          <label>Motor</label>
+          <input type="text" id="motor" placeholder="Nº de motor">
+        </div>
+        <div class="field">
+          <label>Color</label>
+          <input type="text" id="color" placeholder="Ej: BLANCO GLACIAR">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRECIO -->
+  <div class="card">
+    <div class="card-header"><div class="dot"></div>PRECIO</div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:16px;">
+      <div class="form-grid three">
+        <div class="field">
+          <label>Precio Total (con IVA) <span class="req">*</span></label>
+          <input type="number" id="precioTotal" placeholder="Ej: 34000000" oninput="recalcular()">
+        </div>
+        <div class="field">
+          <label>Validez (días)</label>
+          <input type="number" id="validez" value="10" min="1" max="60">
+        </div>
+        <div class="field">
+          <label>¿Incluye patentamiento?</label>
+          <select id="incluirPatente">
+            <option value="no">NO incluye</option>
+            <option value="si">SÍ incluye</option>
+          </select>
+        </div>
+      </div>
+      <div class="totales-box" id="totalesBox">
+        <div class="totales-row"><span class="lbl">Precio ingresado</span><span class="val" id="t_bruto">$0</span></div>
+        <div class="totales-row"><span class="lbl" id="t_ivaLbl">IVA (21%)</span><span class="val" id="t_iva">$0</span></div>
+        <div class="totales-row"><span class="lbl">Neto S/IVA</span><span class="val" id="t_neto">$0</span></div>
+        <div class="totales-row total"><span class="lbl">TOTAL</span><span class="val" id="t_total">$0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOTOS DNI -->
+  <div class="card">
+    <div class="card-header"><div class="dot"></div>FOTOS DE DNI (hasta 3 titulares)</div>
+    <div class="card-body">
+      <div class="foto-grid" id="fotoGrid">
+        <!-- slots generados por JS -->
+      </div>
+      <p style="font-size:11px;color:#aaa;margin-top:12px;">Cargá frente y dorso del DNI de cada titular. Se incluirán en el PDF en una página separada.</p>
+    </div>
+  </div>
+
+  <!-- OBSERVACIONES -->
+  <div class="card">
+    <div class="card-header"><div class="dot"></div>OBSERVACIONES</div>
+    <div class="card-body">
+      <div class="field">
+        <label>Texto adicional (opcional)</label>
+        <textarea id="observaciones" rows="3" placeholder="Ej: Incluye accessories, aclaración especial, etc."></textarea>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<div id="toast"></div>
+
+<script>
+// ====== FOTOS ======
+const FOTO_LABELS = ['DNI Titular 1 — Frente','DNI Titular 1 — Dorso','DNI Titular 2 — Frente','DNI Titular 2 — Dorso','DNI Titular 3 — Frente','DNI Titular 3 — Dorso'];
+const fotoData = {};
+
+function initFotos() {
+  const grid = document.getElementById('fotoGrid');
+  grid.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'foto-slot';
+    slot.id = 'slot_' + i;
+    slot.innerHTML = `
+      <input type="file" accept="image/*" onchange="cargarFoto(${i}, this)">
+      <div class="placeholder">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <p>${FOTO_LABELS[i]}</p>
+      </div>
+      <button class="remove-btn" onclick="removerFoto(event,${i})">✕</button>
+      <div class="foto-label">${FOTO_LABELS[i]}</div>
+    `;
+    grid.appendChild(slot);
+  }
+}
+
+function cargarFoto(idx, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    fotoData[idx] = e.target.result;
+    const slot = document.getElementById('slot_' + idx);
+    let img = slot.querySelector('img');
+    if (!img) {
+      img = document.createElement('img');
+      slot.appendChild(img);
+    }
+    img.src = e.target.result;
+    slot.querySelector('.placeholder').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removerFoto(e, idx) {
+  e.preventDefault();
+  e.stopPropagation();
+  delete fotoData[idx];
+  const slot = document.getElementById('slot_' + idx);
+  const img = slot.querySelector('img');
+  if (img) img.remove();
+  slot.querySelector('.placeholder').style.display = '';
+  slot.querySelector('input').value = '';
+}
+
+// ====== CÁLCULO ======
+function recalcular() {
+  const total = parseFloat(document.getElementById('precioTotal').value) || 0;
+  const tivaEl = document.querySelector('input[name="tipoIVA"]:checked');
+  const pct = tivaEl ? parseFloat(tivaEl.value) / 100 : 0.21;
+  const neto = total / (1 + pct);
+  const iva = total - neto;
+
+  document.getElementById('t_bruto').textContent = fmt(total);
+  document.getElementById('t_ivaLbl').textContent = `IVA (${Math.round(pct*100)}%)`;
+  document.getElementById('t_iva').textContent = fmt(iva);
+  document.getElementById('t_neto').textContent = fmt(neto);
+  document.getElementById('t_total').textContent = fmt(total);
+}
+
+function fmt(n) {
+  return '$' + Math.round(n).toLocaleString('es-AR');
+}
+
+function fmtNum(n) {
+  return Math.round(n).toLocaleString('es-AR');
+}
+
+function numeroALetras(n) {
+  // simplificado
+  const unidades = ['','UN','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ',
+    'ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE'];
+  const decenas = ['','','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
+  const centenas = ['','CIEN','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];
+
+  if (n === 0) return 'CERO';
+  if (n >= 1000000) {
+    const m = Math.floor(n / 1000000);
+    const r = n % 1000000;
+    return (m === 1 ? 'UN MILLÓN' : numeroALetras(m) + ' MILLONES') + (r > 0 ? ' ' + numeroALetras(r) : '');
+  }
+  if (n >= 1000) {
+    const m = Math.floor(n / 1000);
+    const r = n % 1000;
+    return (m === 1 ? 'MIL' : numeroALetras(m) + ' MIL') + (r > 0 ? ' ' + numeroALetras(r) : '');
+  }
+  if (n >= 100) {
+    const c = Math.floor(n / 100);
+    const r = n % 100;
+    let s = c === 1 && r === 0 ? 'CIEN' : centenas[c];
+    if (c === 1 && r > 0) s = 'CIENTO';
+    return s + (r > 0 ? ' ' + numeroALetras(r) : '');
+  }
+  if (n >= 20) {
+    const d = Math.floor(n / 10);
+    const u = n % 10;
+    return decenas[d] + (u > 0 ? ' Y ' + unidades[u] : '');
+  }
+  return unidades[n] || String(n);
+}
+
+// ====== VALIDACIÓN ======
+function v(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+function toast(msg, error = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (error ? ' error' : '');
+  setTimeout(() => { t.className = ''; }, 3000);
+}
+
+// ====== GENERAR PDF ======
+async function generarPDF() {
+  const { jsPDF } = window.jspdf;
+
+  // Validaciones básicas
+  if (!v('cliente')) { toast('⚠ Falta el nombre del cliente', true); return; }
+  if (!v('precioTotal') || parseFloat(v('precioTotal')) <= 0) { toast('⚠ Ingresá el precio', true); return; }
+  if (!v('marca') || !v('modelo')) { toast('⚠ Falta marca/modelo del vehículo', true); return; }
+
+  toast('Generando PDF...');
+
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  const PW = 210; const PH = 297;
+  const ML = 15; const MR = 15; const MT = 15;
+  const CW = PW - ML - MR; // 180
+
+  // === Helpers ===
+  const setFont = (style, size, color = '#1a1a2e') => {
+    doc.setFont('helvetica', style);
+    doc.setFontSize(size);
+    const hex = color.replace('#', '');
+    doc.setTextColor(parseInt(hex.slice(0,2),16), parseInt(hex.slice(2,4),16), parseInt(hex.slice(4,6),16));
+  };
+  const rect = (x, y, w, h, fill, stroke) => {
+    if (fill) { const f = fill.replace('#',''); doc.setFillColor(parseInt(f.slice(0,2),16), parseInt(f.slice(2,4),16), parseInt(f.slice(4,6),16)); }
+    if (stroke) { const s = stroke.replace('#',''); doc.setDrawColor(parseInt(s.slice(0,2),16), parseInt(s.slice(2,4),16), parseInt(s.slice(4,6),16)); doc.setLineWidth(0.3); }
+    doc.rect(x, y, w, h, fill && stroke ? 'FD' : fill ? 'F' : 'D');
+  };
+  const line = (x1, y1, x2, y2, color = '#dde1e7', lw = 0.3) => {
+    const c = color.replace('#','');
+    doc.setDrawColor(parseInt(c.slice(0,2),16), parseInt(c.slice(2,4),16), parseInt(c.slice(4,6),16));
+    doc.setLineWidth(lw);
+    doc.line(x1, y1, x2, y2);
+  };
+
+  // Datos
+  const pct = parseFloat(document.querySelector('input[name="tipoIVA"]:checked').value);
+  const precioTotal = parseFloat(v('precioTotal')) || 0;
+  const neto = precioTotal / (1 + pct / 100);
+  const iva = precioTotal - neto;
+  const fecha = v('fechaDoc') ? new Date(v('fechaDoc') + 'T00:00:00').toLocaleDateString('es-AR') : new Date().toLocaleDateString('es-AR');
+
+  let y = MT;
+
+  // ---- HEADER BANDA ROJA ----
+  rect(0, 0, PW, 22, '#c0392b');
+  setFont('bold', 18, '#ffffff');
+  doc.text('TUTU AUTOMOTORES', ML, 14);
+  setFont('normal', 9, '#ffcccc');
+  doc.text(v('empresa') + '   ·   CUIT ' + v('cuitEmpresa') + '   ·   IVA RESPONSABLE INSCRIPTO', ML, 19.5);
+
+  // Nro Proforma (arriba derecha)
+  setFont('bold', 10, '#ffffff');
+  doc.text('FACTURA PROFORMA', PW - MR, 9, { align: 'right' });
+  setFont('bold', 16, '#ffe0e0');
+  doc.text('N° ' + (v('nroProforma') || '—'), PW - MR, 17, { align: 'right' });
+
+  y = 28;
+
+  // ---- Fecha + Facturación ----
+  setFont('normal', 9, '#7f8c8d');
+  doc.text('Fecha:', ML, y);
+  setFont('bold', 9, '#1a1a2e');
+  doc.text(fecha, ML + 12, y);
+  doc.text('  |  Factura tipo: ', ML + 35, y);
+  setFont('bold', 9, '#c0392b');
+  doc.text('  ' + v('tipoFactura'), ML + 70, y);
+
+  y += 8;
+  line(ML, y, PW - MR, y, '#c0392b', 0.6);
+
+  // ---- BLOQUE CLIENTE ----
+  y += 6;
+  rect(ML, y, CW, 7, '#2c3e50');
+  setFont('bold', 8, '#ffffff');
+  doc.text('DATOS DEL CLIENTE', ML + 4, y + 5);
+  y += 10;
+
+  const rowH = 6.5;
+  const col1 = ML; const col2 = ML + 32; const col3 = ML + 95; const col4 = ML + 120;
+
+  const clientRow = (label, val, x, yy, w) => {
+    setFont('normal', 7.5, '#7f8c8d');
+    doc.text(label, x, yy);
+    setFont('bold', 8, '#1a1a2e');
+    const text = doc.splitTextToSize(val, w - 2);
+    doc.text(text[0] || '', x, yy + rowH - 1);
+  };
+
+  clientRow('SEÑORES:', v('cliente'), col1, y, 80);
+  clientRow('CUIT / DNI:', v('cuitCliente'), col3, y, 70);
+  y += rowH + 2;
+  clientRow('DIRECCIÓN:', v('direccion'), col1, y, 85);
+  clientRow('TEL:', v('telefono'), col3, y, 35);
+  clientRow('E. CIVIL:', v('estadoCivil'), col4 + 15, y, 35);
+  y += rowH + 2;
+  clientRow('FACTURACIÓN:', v('facturacion'), col1, y, 30);
+  clientRow('OPERACIÓN:', v('operacion'), col1 + 30, y, 150);
+  y += rowH + 4;
+
+  line(ML, y, PW - MR, y, '#c0392b', 0.6);
+
+  // ---- BLOQUE VEHÍCULO ----
+  y += 6;
+  rect(ML, y, CW, 7, '#2c3e50');
+  setFont('bold', 8, '#ffffff');
+  doc.text('VEHÍCULO', ML + 4, y + 5);
+  y += 10;
+
+  setFont('bold', 10, '#c0392b');
+  doc.text('UN AUTOMÓVIL 0 KM.', ML, y + 4);
+  setFont('bold', 13, '#1a1a2e');
+  const precioStr = '$' + fmtNum(precioTotal);
+  doc.text(precioStr, PW - MR, y + 4, { align: 'right' });
+  y += 10;
+
+  // tabla vehículo
+  const cols2 = [[ML, 'MARCA', v('marca')], [ML + 60, 'MODELO', v('modelo')], [ML + 120, 'AÑO', v('anio')]];
+  cols2.forEach(([x, lbl, val]) => {
+    setFont('normal', 7, '#7f8c8d');
+    doc.text(lbl + ':', x, y);
+    setFont('bold', 8.5, '#1a1a2e');
+    doc.text(String(val || '—'), x, y + 4.5);
+  });
+  y += 10;
+
+  const cols3 = [[ML, 'TIPO', v('tipo')], [ML + 60, 'PROCEDENCIA', v('procedencia')], [ML + 120, 'COLOR', v('color')]];
+  cols3.forEach(([x, lbl, val]) => {
+    setFont('normal', 7, '#7f8c8d');
+    doc.text(lbl + ':', x, y);
+    setFont('bold', 8.5, '#1a1a2e');
+    doc.text(String(val || '—'), x, y + 4.5);
+  });
+  y += 10;
+
+  const cols4 = [[ML, 'CHASIS', v('chasis')], [ML + 90, 'MOTOR', v('motor')]];
+  cols4.forEach(([x, lbl, val]) => {
+    setFont('normal', 7, '#7f8c8d');
+    doc.text(lbl + ':', x, y);
+    setFont('bold', 8, '#1a1a2e');
+    doc.text(String(val || '—'), x, y + 4.5);
+  });
+  y += 12;
+
+  line(ML, y, PW - MR, y, '#c0392b', 0.6);
+
+  // ---- PRECIOS ----
+  y += 6;
+  rect(ML, y, CW, 7, '#2c3e50');
+  setFont('bold', 8, '#ffffff');
+  doc.text('DETALLE DE PRECIOS', ML + 4, y + 5);
+  y += 12;
+
+  const rightX = PW - MR;
+  const labelX = ML + 90;
+
+  const priceRow = (lbl, val, bold = false, colorVal = '#1a1a2e') => {
+    setFont(bold ? 'bold' : 'normal', bold ? 9 : 8.5, '#7f8c8d');
+    doc.text(lbl, labelX, y);
+    const hex = colorVal.replace('#','');
+    doc.setTextColor(parseInt(hex.slice(0,2),16), parseInt(hex.slice(2,4),16), parseInt(hex.slice(4,6),16));
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.text(val, rightX, y, { align: 'right' });
+    y += bold ? 7 : 6;
+    line(labelX, y - 1.5, rightX, y - 1.5, '#eee');
+  };
+
+  priceRow('Valor Neto S/IVA:', '$ ' + fmtNum(neto));
+  priceRow(`IVA ${pct}%:`, '$ ' + fmtNum(iva));
+  y += 1;
+  rect(labelX - 5, y - 2, rightX - labelX + 5, 10, '#fff5f5');
+  setFont('bold', 10, '#c0392b');
+  doc.text('TOTAL:', labelX, y + 5);
+  setFont('bold', 13, '#c0392b');
+  doc.text('$ ' + fmtNum(precioTotal), rightX, y + 5, { align: 'right' });
+  y += 12;
+
+  // En letras
+  setFont('bold', 7.5, '#7f8c8d');
+  doc.text('SON PESOS:', ML, y);
+  setFont('bold', 8, '#1a1a2e');
+  const letras = numeroALetras(Math.round(precioTotal)) + ' PESOS';
+  const letrasLines = doc.splitTextToSize(letras, CW - 30);
+  doc.text(letrasLines, ML + 24, y);
+  y += letrasLines.length * 5 + 4;
+
+  line(ML, y, PW - MR, y, '#c0392b', 0.6);
+
+  // ---- OBSERVACIONES ----
+  const obs = v('observaciones');
+  if (obs) {
+    y += 6;
+    setFont('bold', 8, '#7f8c8d');
+    doc.text('OBSERVACIONES:', ML, y);
+    y += 5;
+    setFont('normal', 8, '#1a1a2e');
+    const obsLines = doc.splitTextToSize(obs, CW);
+    doc.text(obsLines, ML, y);
+    y += obsLines.length * 5 + 4;
+  }
+
+  // ---- FOOTER AVISOS ----
+  y = Math.max(y, PH - 50);
+  line(ML, y, PW - MR, y, '#ddd');
+  y += 5;
+  setFont('normal', 7.5, '#999999');
+  const avisos = [
+    `Esta factura tiene una validez de ${v('validez') || 10} días desde la fecha de emisión.`,
+    'La factura definitiva se emitirá en pesos al cambio del dólar del día.',
+    'Precios sujetos a modificación.',
+    'NO INCLUYE FLETE, FORMULARIOS Y PREENTREGA.',
+    v('incluirPatente') === 'si' ? 'INCLUYE PATENTAMIENTO.' : 'NO INCLUYE PATENTAMIENTO.',
+  ];
+  avisos.forEach(a => { doc.text('• ' + a, ML, y); y += 4.5; });
+
+  // ---- FIRMA ----
+  y += 6;
+  line(PW - MR - 50, y, PW - MR, y, '#1a1a2e', 0.5);
+  setFont('normal', 8, '#1a1a2e');
+  doc.text(v('empresa'), PW - MR, y + 5, { align: 'right' });
+  setFont('normal', 7, '#999');
+  doc.text('CUIT ' + v('cuitEmpresa'), PW - MR, y + 9, { align: 'right' });
+
+  // ====== PÁGINA 2: FOTOS ======
+  const fotosKeys = Object.keys(fotoData);
+  if (fotosKeys.length > 0) {
+    doc.addPage();
+    rect(0, 0, PW, 16, '#c0392b');
+    setFont('bold', 13, '#ffffff');
+    doc.text('FOTOS DE DNI', ML, 11);
+    setFont('normal', 8, '#ffcccc');
+    const veh = [v('marca'), v('modelo'), v('anio')].filter(Boolean).join(' ');
+    doc.text(veh, PW - MR, 11, { align: 'right' });
+
+    const fCols = 2, fRows = 3; // 2 cols = frente+dorso por fila, 1 titular por fila
+    const fW = (CW - 8) / fCols;
+    const fH = 46; // proporción DNI
+    const fStartY = 24;
+
+    fotosKeys.forEach((idx, i) => {
+      const col = i % fCols;
+      const row = Math.floor(i / fCols);
+      const fx = ML + col * (fW + 8);
+      const fy = fStartY + row * (fH + 14);
+      // Encabezado de titular al inicio de cada fila
+      if (col === 0) {
+        const titNum = row + 1;
+        doc.setFont('helvetica','bold'); doc.setFontSize(8);
+        doc.setTextColor(192,57,43);
+        doc.text('TITULAR ' + titNum, ML, fy - 3);
+        doc.setDrawColor(192,57,43); doc.setLineWidth(0.3);
+        doc.line(ML + 18, fy - 4, PW - MR, fy - 4);
+      }
+      try {
+        doc.addImage(fotoData[idx], 'JPEG', fx, fy, fW, fH, '', 'FAST');
+      } catch(e) {
+        try { doc.addImage(fotoData[idx], 'PNG', fx, fy, fW, fH, '', 'FAST'); } catch(e2) {}
+      }
+      rect(fx, fy, fW, fH, null, '#cccccc');
+      setFont('normal', 7, '#555555');
+      doc.text(FOTO_LABELS[parseInt(idx)], fx + fW / 2, fy + fH + 4, { align: 'center' });
+    });
+  }
+
+  // Guardar
+  const clienteSlug = v('cliente').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30);
+  const nro = v('nroProforma') || 'SN';
+  doc.save(`Proforma_${nro}_${clienteSlug}.pdf`);
+  toast('✓ PDF generado correctamente');
+}
+
+// ====== INIT ======
+window.addEventListener('DOMContentLoaded', () => {
+  initFotos();
+  document.getElementById('fechaDoc').valueAsDate = new Date();
+  recalcular();
+});
+</script>
+</body>
+</html>
