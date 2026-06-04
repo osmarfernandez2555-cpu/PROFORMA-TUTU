@@ -428,7 +428,14 @@ function generarPDF() {
     const fecha = v('fechaDoc') ? new Date(v('fechaDoc')+'T00:00:00').toLocaleDateString('es-AR') : new Date().toLocaleDateString('es-AR');
 
     // helpers
-    function txt(text, x, y, opts) { doc.text(s(String(text||'')), x, y, opts||{}); }
+    function txt(text, x, y, opts) {
+      var t = s(String(text === null || text === undefined ? '' : text));
+      if (opts && Object.keys(opts).length > 0) {
+        doc.text(t, x, y, opts);
+      } else {
+        doc.text(t, x, y);
+      }
+    }
     function bold(size, color) {
       doc.setFont('helvetica','bold');
       doc.setFontSize(size||9);
@@ -492,7 +499,7 @@ function generarPDF() {
       normal(7,'#7f8c8d'); txt(label, x, yy);
       bold(8,'#1a1a2e');
       const lineas = doc.splitTextToSize(s(valor||'--'), maxW);
-      txt(lineas[0], x, yy+5);
+      txt(lineas && lineas[0] ? lineas[0] : '', x, yy+5);
     }
 
     fila('SENORES:', v('cliente'), ML, y, 78);
@@ -562,7 +569,7 @@ function generarPDF() {
     bold(8,'#1a1a2e');
     const letras = enLetras(total) + ' PESOS';
     const ll = doc.splitTextToSize(s(letras), CW-28);
-    doc.text(ll, ML+26, y);
+    if(ll && ll.length) doc.text(ll.map(function(x){return s(x);}), ML+26, y);
     y += ll.length * 5 + 4;
 
     strokeLine(ML, y, PW-MR, y, '#c0392b', 0.6);
@@ -574,7 +581,7 @@ function generarPDF() {
       bold(8,'#7f8c8d'); txt('OBSERVACIONES:', ML, y); y+=5;
       normal(8,'#1a1a2e');
       const ol = doc.splitTextToSize(s(obs), CW);
-      doc.text(ol, ML, y); y += ol.length*5+4;
+      if(ol && ol.length) doc.text(ol.map(function(x){return s(x);}), ML, y); y += (ol?ol.length:1)*5+4;
     }
 
     // ── AVISOS PIE ──
