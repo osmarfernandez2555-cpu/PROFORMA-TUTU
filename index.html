@@ -55,6 +55,21 @@ input::placeholder,textarea::placeholder{color:#3a5a8a;}
 .toggle label:last-child{border-right:none;}
 .toggle input[type=radio]:checked+label{background:linear-gradient(135deg,#1e56b8,#2a5298);color:#fff;}
 
+/* COTITULAR TOGGLE */
+.cotitular-toggle{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.cotitular-toggle span{font-size:11px;font-weight:600;letter-spacing:1px;color:#6b8cba;text-transform:uppercase;}
+.switch{position:relative;width:42px;height:24px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;}
+.slider{position:absolute;inset:0;background:#1e3a6e;border-radius:24px;cursor:pointer;transition:.3s;}
+.slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#6b8cba;border-radius:50%;transition:.3s;}
+.switch input:checked+.slider{background:#1e56b8;}
+.switch input:checked+.slider:before{transform:translateX(18px);background:#fff;}
+.cotitular-panel{overflow:hidden;max-height:0;transition:max-height .4s ease,opacity .3s ease;opacity:0;padding:0 20px;}
+.cotitular-panel.open{max-height:600px;opacity:1;padding:0 20px 4px;}
+.cotitular-sep{border:none;border-top:1px dashed #1e3a6e;margin:4px 0 16px;}
+.cotitular-badge{display:inline-flex;align-items:center;gap:6px;background:#071224;border:1px solid #2a5298;border-radius:6px;padding:5px 12px;margin-bottom:14px;}
+.cotitular-badge span{font-size:11px;font-weight:700;letter-spacing:1px;color:#4a9eff;text-transform:uppercase;}
+
 /* FOTOS DNI */
 .foto-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
 @media(max-width:500px){.foto-grid{grid-template-columns:repeat(2,1fr);}}
@@ -206,7 +221,16 @@ input::placeholder,textarea::placeholder{color:#3a5a8a;}
   </div>
 
   <div class="card">
-    <div class="ch"><div class="dot"></div>DATOS DEL CLIENTE</div>
+    <div class="ch">
+      <div class="dot"></div>DATOS DEL CLIENTE
+      <div class="cotitular-toggle">
+        <span>Cotitular</span>
+        <label class="switch">
+          <input type="checkbox" id="toggleCotitular" onchange="toggleCotitularPanel(this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
     <div class="cb">
       <div class="g2">
         <div class="f s2"><label>Nombre / Razon Social <span class="req">*</span></label><input type="text" id="cliente" placeholder="Apellido y nombre"></div>
@@ -215,6 +239,22 @@ input::placeholder,textarea::placeholder{color:#3a5a8a;}
         <div class="f s2"><label>Direccion</label><input type="text" id="dir" placeholder="Calle, numero, ciudad"></div>
         <div class="f"><label>Telefono</label><input type="tel" id="tel" placeholder="3541000000"></div>
         <div class="f"><label>Facturacion</label><select id="fact"><option>B</option><option>A</option><option>C</option></select></div>
+      </div>
+    </div>
+    <!-- PANEL COTITULAR -->
+    <div class="cotitular-panel" id="cotitularPanel">
+      <hr class="cotitular-sep">
+      <div class="cotitular-badge">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4a9eff" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Cotitular</span>
+      </div>
+      <div class="g2">
+        <div class="f s2"><label>Nombre / Razon Social</label><input type="text" id="cot_cliente" placeholder="Apellido y nombre del cotitular"></div>
+        <div class="f"><label>CUIT / DNI</label><input type="text" id="cot_cuitCli" placeholder="20-XXXXXXXX-X"></div>
+        <div class="f"><label>Estado Civil</label><select id="cot_ecivil"><option>SOLTERO/A</option><option>CASADO/A</option><option>DIVORCIADO/A</option><option>VIUDO/A</option></select></div>
+        <div class="f s2"><label>Direccion</label><input type="text" id="cot_dir" placeholder="Calle, numero, ciudad"></div>
+        <div class="f"><label>Telefono</label><input type="tel" id="cot_tel" placeholder="3541000000"></div>
+        <div class="f"><label>Facturacion</label><select id="cot_fact"><option>B</option><option>A</option><option>C</option></select></div>
       </div>
     </div>
   </div>
@@ -379,6 +419,12 @@ function field2(label,val){
 }
 
 // ── BUILD PAGINA 1 ──
+function toggleCotitularPanel(checked) {
+  var panel = document.getElementById('cotitularPanel');
+  if (checked) panel.classList.add('open');
+  else panel.classList.remove('open');
+}
+
 function buildPag1() {
   var pct=parseFloat(document.querySelector('input[name=iva]:checked').value);
   var total=parseFloat(gv('precio'))||0;
@@ -408,8 +454,14 @@ function buildPag1() {
   '<div class="pv-body">' +
 
   '<div class="pv-section"><div class="pv-stitle">Datos del Cliente</div>' +
-  '<div class="pv-row">'+field2('Senores',gv('cliente'))+field('CUIT / DNI',gv('cuitCli'))+field('Estado Civil',gv('ecivil'))+'</div>' +
+  '<div class="pv-row">'+field2('Titular',gv('cliente'))+field('CUIT / DNI',gv('cuitCli'))+field('Estado Civil',gv('ecivil'))+'</div>' +
   '<div class="pv-row">'+field2('Direccion',gv('dir'))+field('Telefono',gv('tel'))+field('Facturacion',gv('fact'))+'</div>' +
+  (document.getElementById('toggleCotitular').checked ?
+    '<div style="border-top:1px dashed #dde4f0;margin:8px 0 6px;"></div>' +
+    '<div style="font-size:9px;font-weight:700;color:#1e56b8;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;">Cotitular</div>' +
+    '<div class="pv-row">'+field2('Cotitular',gv('cot_cliente'))+field('CUIT / DNI',gv('cot_cuitCli'))+field('Estado Civil',gv('cot_ecivil'))+'</div>' +
+    '<div class="pv-row">'+field2('Direccion',gv('cot_dir'))+field('Telefono',gv('cot_tel'))+field('Facturacion',gv('cot_fact'))+'</div>'
+  : '') +
   '<div class="pv-row">'+field2('Operacion / Financiacion',gv('oper'))+'</div>' +
   '</div>' +
 
